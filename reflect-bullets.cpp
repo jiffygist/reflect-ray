@@ -1,5 +1,8 @@
 #include <SDL.h>
 #include <cmath>
+#include <vector>
+
+using namespace std;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -12,10 +15,50 @@ struct Trajectory
 	float length;
 	float angle;
 
+	struct Bend
+	{
+		float dist;
+		float new_angle;
+	};
+
+	vector<Bend> bends;
+
 	void draw()
 	{
-		SDL_FPoint end = {sin(angle) * length, cos(angle) * length};
-		SDL_RenderDrawLine(renderer, origin.x, origin.y, origin.x + end.x, origin.y + end.y);
+		calc_bends();
+
+		SDL_FPoint segment_origin = origin;
+		float segment_angle = angle;
+		float segment_dist = 0;
+		float segment_length;
+		SDL_FPoint segment_end;
+		
+		for (int i = 0; i < bends.size(); ++i)
+		{
+			float segment_length = bends[i].dist - segment_dist;
+
+			segment_end = {sin(segment_angle) * segment_length + segment_origin.x,
+			               cos(segment_angle) * segment_length + segment_origin.y};
+			SDL_RenderDrawLine(renderer,
+			                   segment_origin.x, segment_origin.y,
+			                   segment_end.x, segment_end.y);
+
+			segment_dist = bends[i].dist;
+			segment_angle = bends[i].new_angle;
+			segment_origin = segment_end;
+		}
+
+		segment_length = length - segment_dist;
+		segment_end = {sin(segment_angle) * segment_length + segment_origin.x,
+		               cos(segment_angle) * segment_length + segment_origin.y};
+		SDL_RenderDrawLine(renderer,
+		                   segment_origin.x, segment_origin.y,
+		                   segment_end.x, segment_end.y);
+	}
+
+	void calc_bends()
+	{
+		bends.clear();
 	}
 };
 
