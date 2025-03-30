@@ -18,7 +18,7 @@ struct Segment
 	float x1, y1, x2, y2;
 };
 
-vector<Segment> mirrors = 
+vector<Segment> mirrors =
 {
 	{(float)world.x, (float)world.y, (float)world.w-1, (float)world.y},
 	{(float)world.w-1, (float)world.y, (float)world.w-1, (float)world.h-1},
@@ -74,7 +74,7 @@ struct Trajectory
 	void draw()
 	{
 		calc_points();
-		
+
 		for (int i = 1; i < points.size(); ++i)
 		{
 			SDL_FPoint segment_start = {points[i-1].x, points[i-1].y};
@@ -180,15 +180,15 @@ int main()
 			}
 		}
 
-        int mouse_x, mouse_y;
-        SDL_GetMouseState(&mouse_x, &mouse_y);
+		int mouse_x, mouse_y;
+		SDL_GetMouseState(&mouse_x, &mouse_y);
 
-        float logical_mouse_x;
-        float logical_mouse_y;
-        SDL_RenderWindowToLogical(renderer, mouse_x, mouse_y, &logical_mouse_x, &logical_mouse_y);
+		float logical_mouse_x;
+		float logical_mouse_y;
+		SDL_RenderWindowToLogical(renderer, mouse_x, mouse_y, &logical_mouse_x, &logical_mouse_y);
 
-        tr.angle = atan2f(logical_mouse_y - tr.origin.y, logical_mouse_x - tr.origin.x);
-        
+		tr.angle = atan2f(logical_mouse_y - tr.origin.y, logical_mouse_x - tr.origin.x);
+
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &world);
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
