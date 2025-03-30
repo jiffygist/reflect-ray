@@ -1,5 +1,4 @@
-LDFLAGS=`pkg-config --libs sdl2`
-CXXFLAGS=`pkg-config --cflags sdl2`
+-include config.mk
 
 reflect-ray: reflect-ray.o
 	c++ $^ -o $@ $(LDFLAGS)
