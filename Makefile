@@ -1,7 +1,7 @@
 -include config.mk
 
 reflect-ray: reflect-ray.o
-	c++ $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 .PHONY: clean
 clean:
