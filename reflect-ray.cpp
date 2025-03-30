@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <cmath>
 #include <vector>
@@ -161,7 +162,6 @@ int main()
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(900, 600, SDL_WINDOW_RESIZABLE, &window, &renderer);
 	SDL_RenderSetLogicalSize(renderer, world.w, world.h);
-	SDL_ShowCursor(0);
 
 	Uint64 cnt_end = SDL_GetPerformanceCounter();
 	while (1)
@@ -179,6 +179,16 @@ int main()
 				exit(0);
 			}
 		}
+
+        int mouse_x, mouse_y;
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+
+        float logical_mouse_x;
+        float logical_mouse_y;
+        SDL_RenderWindowToLogical(renderer, mouse_x, mouse_y, &logical_mouse_x, &logical_mouse_y);
+
+        tr.angle = atan2f(logical_mouse_y - tr.origin.y, logical_mouse_x - tr.origin.x);
+        
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &world);
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
