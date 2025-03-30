@@ -9,7 +9,8 @@ using namespace std;
 SDL_Window* window;
 SDL_Renderer* renderer;
 const int FPS = 60;
-SDL_Rect world = {0, 0, 60, 80};
+SDL_Rect world = {0, 0, 300, 200};
+float reflection_distance = 1;
 
 struct Segment
 {
@@ -22,9 +23,7 @@ vector<Segment> mirrors =
 	{(float)world.w-1, (float)world.y, (float)world.w-1, (float)world.h-1},
 	{(float)world.x, (float)world.h-1, (float)world.w-1, (float)world.h-1},
 	{(float)world.x, (float)world.y, (float)world.x, (float)world.h-1},
-	// {0, 30, 30, 30},
-	// {25, 0, 25, 10},
-	// {(float)world.x, (float)world.h, (float)world.w, (float)world.y}
+	{0, 100, 100, 100},
 };
 
 float distance(SDL_FPoint p, SDL_FPoint q)
@@ -56,7 +55,6 @@ bool intersection_point(Segment seg1, Segment seg2, SDL_FPoint& p)
 	                     s0, t0);
 	if (!result || s0 < 0.0f || s0 > 1.0f || t0 < 0.0f || t0 > 1.0f)
 	{
-		SDL_Log("s0 = %f, t0 = %f", s0, t0);
 		return false;
 	}
 	p.x = seg1.x1 + s0 * (seg1.x2 - seg1.x1);
@@ -124,16 +122,16 @@ struct Trajectory
 			}
 			if (mirror_idx < 0)
 			{
-				SDL_Log("no intersects");
 				break;
 			}
 			mirror_last = mirror_idx;
-			SDL_Log("reflection off mirror %d at %lf, %lf", mirror_last, reflection_point.x, reflection_point.y);
+			float ray_angle = line_angle(ray);
+			float mirror_angle = line_angle(mirrors[mirror_last]);
+			mirror_dist -= reflection_distance;
+			reflection_point = {ray.x1 + mirror_dist * cosf(ray_angle), ray.y1 + mirror_dist * sinf(ray_angle)};
 			points[n] = reflection_point;
 			ray.x2 = reflection_point.x;
 			ray.y2 = reflection_point.y;
-			float ray_angle = line_angle(ray);
-			float mirror_angle = line_angle(mirrors[mirror_last]);
 			direction = 2 * (mirror_angle - ray_angle) + ray_angle;
 			remaining_length -= mirror_dist;
 		}
@@ -158,11 +156,12 @@ void delay_frame(Uint64& cnt_start, Uint64& cnt_end)
 
 int main()
 {
-	Trajectory tr = {{20.0f, 20.0f}, 100.0f, -M_PI/4.0f};
+	Trajectory tr = {{world.w/2.0f, world.h/2.0f}, 1000.0f, -M_PI/4.0f};
 
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_CreateWindowAndRenderer(600, 800, SDL_WINDOW_RESIZABLE, &window, &renderer);
+	SDL_CreateWindowAndRenderer(900, 600, SDL_WINDOW_RESIZABLE, &window, &renderer);
 	SDL_RenderSetLogicalSize(renderer, world.w, world.h);
+	SDL_ShowCursor(0);
 
 	Uint64 cnt_end = SDL_GetPerformanceCounter();
 	while (1)
