@@ -1,4 +1,3 @@
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <cmath>
 #include <vector>
@@ -155,7 +154,7 @@ void delay_frame(Uint64& cnt_start, Uint64& cnt_end)
 	}
 }
 
-int main()
+int main(int argc, char** argv)
 {
 	Trajectory tr = {{world.w/2.0f, world.h/2.0f}, 1000.0f, -M_PI/4.0f};
 
