@@ -18,12 +18,13 @@ struct Segment
 
 vector<Segment> mirrors = 
 {
-	// {(float)world.x, (float)world.y, (float)world.w-1, (float)world.y},
-	// {(float)world.w-1, (float)world.y, (float)world.w-1, (float)world.h-1},
-	// {(float)world.x, (float)world.h-1, (float)world.w-1, (float)world.h-1},
-	// {(float)world.x, (float)world.y, (float)world.x, (float)world.h-1},
+	{(float)world.x, (float)world.y, (float)world.w-1, (float)world.y},
+	{(float)world.w-1, (float)world.y, (float)world.w-1, (float)world.h-1},
+	{(float)world.x, (float)world.h-1, (float)world.w-1, (float)world.h-1},
+	{(float)world.x, (float)world.y, (float)world.x, (float)world.h-1},
 	// {0, 30, 30, 30},
-	{25, 0, 25, 10}
+	// {25, 0, 25, 10},
+	// {(float)world.x, (float)world.h, (float)world.w, (float)world.y}
 };
 
 float distance(SDL_FPoint p, SDL_FPoint q)
@@ -51,10 +52,13 @@ bool intersection_point(Segment seg1, Segment seg2, SDL_FPoint& p)
 {
 	float s0, t0;
 	bool result = solve2(seg1.x2 - seg1.x1, seg2.x1 - seg2.x2, seg2.x1 - seg1.x1,
-	                     seg1.y2 - seg1.y1, seg2.y1 - seg2.y2, seg2.y2 - seg1.y1,
+	                     seg1.y2 - seg1.y1, seg2.y1 - seg2.y2, seg2.y1 - seg1.y1,
 	                     s0, t0);
 	if (!result || s0 < 0.0f || s0 > 1.0f || t0 < 0.0f || t0 > 1.0f)
+	{
+		SDL_Log("s0 = %f, t0 = %f", s0, t0);
 		return false;
+	}
 	p.x = seg1.x1 + s0 * (seg1.x2 - seg1.x1);
 	p.y = seg1.y1 + s0 * (seg1.y2 - seg1.y1);
 	return true;
@@ -79,7 +83,6 @@ struct Trajectory
 			SDL_RenderDrawLine(renderer,
 			                   segment_start.x, segment_start.y,
 			                   segment_end.x, segment_end.y);
-			segment_start = segment_end;
 		}
 	}
 
@@ -134,7 +137,6 @@ struct Trajectory
 			direction = 2 * (mirror_angle - ray_angle) + ray_angle;
 			remaining_length -= mirror_dist;
 		}
-		SDL_Log("%ld\n", points.size());
 	}
 };
 
@@ -182,7 +184,7 @@ int main()
 		SDL_RenderFillRect(renderer, &world);
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 		tr.draw();
-		// tr.angle += 0.01;
+		tr.angle += 0.01;
 		for (int i = 0; i < mirrors.size(); ++i)
 		{
 			SDL_SetRenderDrawColor(renderer, 200, 200, 0, 255);
