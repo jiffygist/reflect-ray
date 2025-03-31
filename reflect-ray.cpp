@@ -62,18 +62,20 @@ bool intersection_point(Segment seg1, Segment seg2, SDL_FPoint& p)
 	return true;
 }
 
-struct Trajectory
+class Trajectory
 {
 	SDL_FPoint origin;
 	float length;
 	float angle;
-
 	vector<SDL_FPoint> points;
+
+public:
+	Trajectory(SDL_FPoint origin, float length, float angle) : origin(origin), length(length), angle(angle) {}
 
 	void draw()
 	{
 		calc_points();
-
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 		for (int i = 1; i < points.size(); ++i)
 		{
 			SDL_FPoint segment_start = {points[i-1].x, points[i-1].y};
@@ -84,6 +86,7 @@ struct Trajectory
 		}
 	}
 
+private:
 	void calc_points()
 	{
 		points.clear();
@@ -138,6 +141,39 @@ struct Trajectory
 	}
 };
 
+class Player
+{
+	SDL_FPoint pos;
+	float angle;
+	bool firing;
+	float shooting_range;
+
+public:
+	Player(SDL_FPoint pos, float angle, float shooting_range) : pos(pos), angle(angle), shooting_range(shooting_range) {}
+
+	void turn_mouse(float logical_mouse_x, float logical_mouse_y)
+	{
+		angle = atan2f(logical_mouse_y - pos.y, logical_mouse_x - pos.x);
+	}
+
+	void set_firing(float firing)
+	{
+		this->firing = firing;
+	}
+
+	void draw()
+	{
+		if (firing)
+		{
+			Trajectory tr(pos, shooting_range, angle);
+			tr.draw();
+		}
+		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+		SDL_Rect rect = {(int)pos.x, (int)pos.y, 1, 1};
+		SDL_RenderFillRect(renderer, &rect);
+	}
+};
+
 void delay_frame(Uint64& cnt_start, Uint64& cnt_end)
 {
 	float cnt_delta = (float)(cnt_end - cnt_start)/SDL_GetPerformanceFrequency();
@@ -156,8 +192,7 @@ void delay_frame(Uint64& cnt_start, Uint64& cnt_end)
 
 int main(int argc, char** argv)
 {
-	bool firing = false;
-	Trajectory tr = {{world.w/2.0f, world.h/2.0f}, 1000.0f, -M_PI/4.0f};
+	Player player({world.w/2.0f, world.h/2.0f}, -M_PI/4.0f, 1000.0f);
 
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(900, 600, SDL_WINDOW_RESIZABLE, &window, &renderer);
@@ -183,21 +218,17 @@ int main(int argc, char** argv)
 		int mouse_x, mouse_y;
 		Uint32 buttons;
 		buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
-
-		firing = buttons & SDL_BUTTON_LMASK;
+		player.set_firing(buttons & SDL_BUTTON_LMASK);
 
 		float logical_mouse_x;
 		float logical_mouse_y;
 		SDL_RenderWindowToLogical(renderer, mouse_x, mouse_y, &logical_mouse_x, &logical_mouse_y);
+		player.turn_mouse(logical_mouse_x, logical_mouse_y);
 
-		tr.angle = atan2f(logical_mouse_y - tr.origin.y, logical_mouse_x - tr.origin.x);
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-		SDL_RenderFillRect(renderer, &world);
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-		if (firing)
-			tr.draw();
-		tr.angle += 0.01;
+		SDL_RenderFillRect(renderer, &world);		
+		player.draw();
 		for (int i = 0; i < mirrors.size(); ++i)
 		{
 			SDL_SetRenderDrawColor(renderer, 200, 200, 0, 255);
