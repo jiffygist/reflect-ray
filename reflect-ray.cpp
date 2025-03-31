@@ -156,6 +156,7 @@ void delay_frame(Uint64& cnt_start, Uint64& cnt_end)
 
 int main(int argc, char** argv)
 {
+	bool firing = false;
 	Trajectory tr = {{world.w/2.0f, world.h/2.0f}, 1000.0f, -M_PI/4.0f};
 
 	SDL_Init(SDL_INIT_VIDEO);
@@ -180,7 +181,10 @@ int main(int argc, char** argv)
 		}
 
 		int mouse_x, mouse_y;
-		SDL_GetMouseState(&mouse_x, &mouse_y);
+		Uint32 buttons;
+		buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
+
+		firing = buttons & SDL_BUTTON_LMASK;
 
 		float logical_mouse_x;
 		float logical_mouse_y;
@@ -191,7 +195,8 @@ int main(int argc, char** argv)
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &world);
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-		tr.draw();
+		if (firing)
+			tr.draw();
 		tr.angle += 0.01;
 		for (int i = 0; i < mirrors.size(); ++i)
 		{
