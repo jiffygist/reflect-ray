@@ -161,6 +161,14 @@ public:
 		this->firing = firing;
 	}
 
+	void move(bool forward, bool backward, bool left, bool right)
+	{
+		if (forward) pos.y -= 1;
+		if (backward) pos.y += 1;
+		if (left) pos.x -= 1;
+		if (right) pos.x += 1;
+	}
+
 	void draw()
 	{
 		if (firing)
@@ -225,6 +233,11 @@ int main(int argc, char** argv)
 		SDL_RenderWindowToLogical(renderer, mouse_x, mouse_y, &logical_mouse_x, &logical_mouse_y);
 		player.turn_mouse(logical_mouse_x, logical_mouse_y);
 
+		const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
+		player.move(keyboard_state[SDL_SCANCODE_W],
+		            keyboard_state[SDL_SCANCODE_S],
+		            keyboard_state[SDL_SCANCODE_A],
+		            keyboard_state[SDL_SCANCODE_D]);
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &world);		
