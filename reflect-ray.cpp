@@ -62,6 +62,17 @@ bool intersection_point(Segment seg1, Segment seg2, SDL_FPoint& p)
 	return true;
 }
 
+bool point_on_line_segment(Segment seg, SDL_FPoint p)
+{
+	if (p.x < seg.x1 || p.x > seg.x2)
+		return false;
+	if (p.y < seg.y1 || p.y > seg.y2)
+		return false;
+	if ((seg.x2 - seg.x1) * (p.y - seg.y1) != (p.x - seg.x1) * (seg.y2 - seg.y1))
+		return false;
+	return true;
+}
+
 class Trajectory
 {
 	SDL_FPoint origin;
@@ -163,10 +174,17 @@ public:
 
 	void move(bool forward, bool backward, bool left, bool right)
 	{
-		if (forward) pos.y -= 1;
-		if (backward) pos.y += 1;
-		if (left) pos.x -= 1;
-		if (right) pos.x += 1;
+		SDL_FPoint new_pos = pos;
+
+		if (forward) new_pos.y -= 1;
+		if (backward) new_pos.y += 1;
+		if (check_no_collision(new_pos))
+			pos = new_pos;
+		new_pos = pos;
+		if (left) new_pos.x -= 1;
+		if (right) new_pos.x += 1;
+		if (check_no_collision(new_pos))
+			pos = new_pos;
 	}
 
 	void draw()
@@ -179,6 +197,21 @@ public:
 		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 		SDL_Rect rect = {(int)pos.x, (int)pos.y, 1, 1};
 		SDL_RenderFillRect(renderer, &rect);
+	}
+
+private:
+	bool check_no_collision(SDL_FPoint new_pos)
+	{
+		bool no_collision = true;
+		for (int i = 0; i < mirrors.size(); ++i)
+		{
+			if (point_on_line_segment(mirrors[i], new_pos))
+			{
+				no_collision = false;
+				break;
+			}
+		}
+		return no_collision;
 	}
 };
 
